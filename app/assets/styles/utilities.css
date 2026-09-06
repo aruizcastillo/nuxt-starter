@@ -1,0 +1,6 @@
+/* Utilities */
+
+/* Ghost */
+@utility ghost {
+  @apply bg-transparent! border-transparent! shadow-none!;
+}

@@ -1,0 +1,19 @@
+@layer base {
+  html {
+    @apply scrollbar-gutter-stable;
+  }
+
+  body {
+    @apply min-h-dvh antialiased;
+  }
+
+  main {
+    @apply flex flex-1 flex-col;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-heading;
+  }
+}
