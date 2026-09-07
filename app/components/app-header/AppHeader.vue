@@ -16,10 +16,21 @@ const { t } = useI18n()
         >
           <AppLogo aria-hidden="true" />
         </NuxtLink>
+
         <div class="flex items-center gap-1">
-          <AppHeaderStyleDropdown />
-          <AppHeaderThemeDropdown />
-          <AppHeaderLangDropdown />
+          <UiButton
+            variant="ghost"
+            size="sm"
+            as-child
+          >
+            <a
+              href="https://example.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              example.com!
+            </a>
+          </UiButton>
         </div>
       </div>
     </header>
