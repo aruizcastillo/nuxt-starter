@@ -19,23 +19,6 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', href: '/favicon.ico' },
       ],
-      script: [
-        {
-          key: 'theme-init',
-          tagPosition: 'head',
-          tagPriority: 'critical',
-          // The server exposes the validated cookie preference on <html>.
-          innerHTML: `(() => {
-            const root = document.documentElement
-            if (root.dataset.themePreference !== 'system') return
-            const dark = typeof window.matchMedia === 'function'
-              && window.matchMedia('(prefers-color-scheme: dark)').matches
-            const resolved = dark ? 'dark' : 'light'
-            root.dataset.theme = resolved
-            root.style.colorScheme = resolved
-          })()`,
-        },
-      ],
     },
   },
 
