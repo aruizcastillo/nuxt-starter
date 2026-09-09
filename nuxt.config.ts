@@ -25,6 +25,16 @@ export default defineNuxtConfig({
   css: [
     '~/assets/styles/main.css',
   ],
+
+  runtimeConfig: {
+    databaseUrl: '',
+    betterAuthSecret: '',
+    betterAuthUrl: '',
+    googleClientId: '',
+    googleClientSecret: '',
+    resendApiKey: '',
+    emailFrom: '',
+  },
   compatibilityDate: '2025-07-15',
 
   vite: {

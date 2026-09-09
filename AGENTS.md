@@ -21,6 +21,25 @@ Before implementing anything version-sensitive:
 
 Never assume that examples from search results, blog posts, Stack Overflow, GitHub discussions, old docs, or model knowledge apply to the installed version.
 
+## Ambiguity and decision handling
+
+If an implementation decision is unclear, underspecified, or has multiple materially different valid approaches, stop before making that decision and ask for clarification.
+
+Do not guess, invent requirements, or silently choose an architectural, product, security, data-model, UX, or dependency decision when the intended direction is not clear.
+
+You may proceed without asking only when:
+- the choice is mechanical or directly implied by the existing codebase, roadmap, documentation, or official guidance;
+- there is a single clearly established project convention;
+- the difference is trivial and does not materially affect architecture, behavior, compatibility, security, data, or maintainability.
+
+When asking:
+- explain the ambiguity briefly;
+- list the relevant options when useful;
+- state the practical trade-off;
+- wait for explicit direction before continuing that part of the implementation.
+
+Do not continue implementing around an unresolved decision if doing so could constrain or bias the eventual choice.
+
 ## Source-of-truth hierarchy
 
 When sources or approaches disagree, use this priority:
@@ -44,6 +63,14 @@ Use an ecosystem convention only when higher-priority sources do not prescribe t
 
 `package.json` is authoritative for declared dependency constraints. The lockfile or installed package is authoritative for the exact resolved version used for version-sensitive work.
 
+### Prerelease rule
+
+Drizzle ORM and Drizzle Kit currently use `1.0.0-rc.4`.
+
+Treat stable Drizzle 0.x documentation and examples as potentially obsolete. Do not use Drizzle 0.x relations, configuration, query, or migration patterns unless current Drizzle 1.0 RC documentation explicitly confirms them.
+
+Never silently adapt an outdated example with a workaround.
+
 ## Project documentation
 
 Before planning or changing an established area, review the relevant files under `docs/current/` and `docs/deprecated/`.
@@ -62,14 +89,6 @@ Use this minimum format for entries:
 ```text
 YYYY-MM-DD HH:mm — Short title
 ```  
-
-### Prerelease rule
-
-Drizzle ORM and Drizzle Kit currently use `1.0.0-rc.4`.
-
-Treat stable Drizzle 0.x documentation and examples as potentially obsolete. Do not use Drizzle 0.x relations, configuration, query, or migration patterns unless current Drizzle 1.0 RC documentation explicitly confirms them.
-
-Never silently adapt an outdated example with a workaround.
 
 ## Architecture philosophy
 
