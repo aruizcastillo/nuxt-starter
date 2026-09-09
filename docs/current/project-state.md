@@ -2,9 +2,9 @@
 
 ## Current baseline
 
-2026-09-09 20:04 — Initial repository baseline
+2026-09-09 20:31 — Phase 1 environment and configuration
 
-The repository is a pre-Phase-1 Nuxt starter: a public UI shell and development tooling are present; database, authentication and account functionality are not implemented. The source agrees with the version baseline and implementation boundaries in the [roadmap](../roadmap/roadmap.md). No blocking baseline inconsistency was found; the repository is ready to begin Phase 1. This is a local repository baseline, not evidence of provisioned services or production readiness. Timestamp uses Europe/Madrid.
+The repository has completed Phase 1 configuration: reproducible Node/pnpm setup, private runtime keys, on-use server settings validation and documented local/preview/production conventions. The public UI shell remains the only application functionality; database, authentication and account integrations are not implemented. The next item is provisioning an isolated Neon development database in Phase 2. Timestamps use Europe/Madrid.
 
 ### Stack
 
@@ -22,27 +22,31 @@ Resolved direct dependencies agree between `pnpm-lock.yaml` and the installed pa
 
 The build resolves Nitro 2.13.4 and Vite 8.2.2 transitively. The private package uses ESM. Manifest constraints remain authoritative: most are caret ranges; Drizzle ORM/Kit and shadcn-nuxt are exact pins. In particular, vee-validate is declared as `^5.0.0-beta.0` but resolves to beta.1. TypeScript 6 and Drizzle RC are intentional version lines.
 
-The repository has a pnpm lockfile (format 9.0) and workspace settings, but no `packageManager`, `engines` or Node version file. This review used Node 26.8.1 and pnpm 12.3.4. Installed Nuxt requires Node `^22.19.0 || ^24.11.0 || >=26.0.0`; that is a package constraint, not a verified deployment runtime. Phase 1 plans Node 24 (at least 24.11.0) and verification of pnpm before pinning it. That pair and a fresh frozen installation remain unverified.
+Node 24 is the supported development/CI/Vercel major (`>=24.11.0 <25`); `.nvmrc` records tested Node 24.21.0 and `packageManager` pins pnpm 12.3.4. A frozen installation with that pair passed, including `postinstall`/`nuxt prepare`. Pinning pnpm required its package-manager dependency metadata in the lockfile; the application dependency graph is unchanged. The final frozen install did not change the locked graph. Deployment runtime selection remains Phase 9 work.
 
 `pnpm-workspace.yaml` allows dependency build scripts for esbuild, unrs-resolver and vue-demi, and contains a release-age exception for `@lucide/vue@1.42.0`. `postinstall` runs `nuxt prepare` to generate Nuxt tooling files.
 
 ### Architecture
 
 - `app/` holds the universal application: root component, one default layout, the index page, application components, UI primitives and CSS. Nuxt's `@`/`~` aliases resolve here; `@@`/`~~` resolve to the repository root.
-- `server/database/schema/` exists locally but is empty. There are no server handlers, middleware, plugins, database clients or auth modules. Empty directories are not tracked by Git and need not exist in a fresh clone.
+- `server/database/schema/` exists locally but is empty. The only server source is `server/utils/config.ts`; there are no server handlers, middleware, plugins, database clients or auth modules. Empty directories are not tracked by Git and need not exist in a fresh clone.
 - `shared/` is an established boundary for deliberately shared safe code, but does not yet exist. There are no application composables, plugins, route middleware, state stores or service/repository layers.
 - `i18n/locales/` owns translation JSON. `public/` serves the favicon, robots file and static sitemap. `test/unit/` and `test/nuxt/` are empty local placeholders.
 - [AGENTS.md](../../AGENTS.md) and `.agents/skills/` govern implementation. `skills-lock.json` records skill provenance; roadmap files describe future work, not completed integrations.
 
 ### Configuration
 
-**Nuxt/build:** `nuxt.config.ts` enables Nuxt ESLint, shadcn-nuxt and i18n, development tools, global CSS and Tailwind's Vite plugin. SSR is not disabled. Compatibility date is `2025-07-15`. Head defaults supply the starter title, description, English language and favicon; the app reactively replaces the HTML language with the active locale. There are no custom route rules, runtime configuration keys or explicit Nitro deployment preset. Scripts expose development, production build, static generation and preview. Vercel-first is the intended deployment architecture; no CI workflow or repository deployment configuration currently establishes it.
+**Nuxt/build:** `nuxt.config.ts` enables Nuxt ESLint, shadcn-nuxt and i18n, development tools, global CSS and Tailwind's Vite plugin. SSR is not disabled. Compatibility date is `2025-07-15`. Head defaults supply the starter title, description, English language and favicon; the app reactively replaces the HTML language with the active locale. Seven empty private runtime keys declare the environment contract; none is public. There are no custom route rules or explicit Nitro deployment preset. Scripts expose development, production build, static generation and preview. Vercel-first is the intended deployment architecture; no CI workflow or repository deployment configuration currently establishes it.
 
 **TypeScript:** root `tsconfig.json` references Nuxt's generated app, server, shared and Node projects. Generated configurations are strict, with unchecked indexed access enabled and library checking skipped. App coverage includes `app/`, i18n and Nuxt test directories; server/shared projects own their corresponding boundaries. `typescript.nodeTsConfig.include` additionally covers `drizzle.config.ts`, `vitest.config.ts` and `test/unit/**/*.ts` alongside Nuxt's tooling defaults. New test locations such as planned e2e/helpers need their inclusion checked when introduced. Typecheck is a separate script, not a build or CI gate automatically enforced by this repository.
 
 **ESLint:** the flat config composes `.nuxt/eslint.config.mjs` with stylistic rules enabled. The sole project-added ignore is `.agents/skills/**`; application UI components remain linted. The resolved base also honors `.gitignore` and ignores dependency/build directories, `.vercel`, `.netlify` and `public`. Lint does not constitute validation of public XML, CSS or Markdown content.
 
-**Environment:** `.env.example` contains empty `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. Drizzle tooling is the only current consumer, loading dotenv and reading `DATABASE_URL!`; the assertion is not runtime validation. There is no application settings parser, email configuration or local/preview/production contract. `.env` and `.env.*` are ignored except `.env.example`. Phase 1's private `NUXT_*` contract is planned and has not replaced these names.
+**Environment:** `.env.example` declares `NUXT_DATABASE_URL`, `NUXT_BETTER_AUTH_SECRET`, `NUXT_BETTER_AUTH_URL`, the `NUXT_GOOGLE_CLIENT_ID`/`NUXT_GOOGLE_CLIENT_SECRET` pair and the `NUXT_RESEND_API_KEY`/`NUXT_EMAIL_FROM` pair. Nuxt owns runtime overrides; Drizzle Kit separately loads dotenv and directly reads the same database variable. The old unprefixed aliases are not supported. `.env` and `.env.*` remain ignored except `.env.example`.
+
+`server/utils/config.ts` contains small Zod 4 parsers for database, auth and email settings. Future consumers pass `useRuntimeConfig(event)` only when initializing the relevant functionality; auth consumers pass `import.meta.dev` to allow HTTP on localhost during development. No eager startup validation or service integration exists. Database URLs require a PostgreSQL protocol and host. Auth requires a secret of at least 32 non-padding characters and a canonical origin; HTTPS is mandatory outside localhost development. Randomness is an operational requirement, not claimed by length validation. Google and email pairs reject partial settings while permitting an absent pair during foundation work; Phase 4 must enforce enabled-method requirements. Errors contain variable names without values or raw Zod issues.
+
+README documents Node/pnpm setup, environment scopes, isolated service targets and independent secrets, stable controlled HTTPS preview origins, exact future OAuth callbacks, the same-origin `/api/auth` plan, and the selected Resend HTTP/fetch plan. Resend keys and a verified sender are justified configuration placeholders, not an implemented sender. Nuxt dev/build and local preview load `.env`; standalone built output requires process environment variables. Vercel environment provisioning remains Phase 9.
 
 **i18n:** English and Spanish use `no_prefix`, with English as default, cookie detection through `i18n_redirected` and `redirectOn: 'root'`. Locale `file` entries load JSON from `i18n/locales/`, matching the [10.6.0 file-based loading convention](https://i18n.nuxtjs.org/docs/guide/lazy-load-translations). Both files have matching key structure. There is no custom Vue I18n config, explicit message fallback policy, locale switcher or localized SEO setup. The shell uses translated app/navigation labels; the homepage and external link remain hardcoded placeholders.
 
@@ -62,13 +66,13 @@ Vitest defines two projects: `unit` uses Node and `test/unit/**/*.{test,spec}.ts
 
 ### Database and authentication
 
-`drizzle.config.ts` configures PostgreSQL, schema glob `./server/database/schema/*.ts` and migration output `./server/database/migrations`. These configuration fields are supported by installed Kit RC.4 types. Scripts expose `db:generate`, `db:migrate`, `db:push` and `db:studio`. No schema, relations or migration artifacts exist; the migration output directory has not been created. The established production workflow is schema → generate → review/commit → migrate; push is reserved for appropriate development use.
+`drizzle.config.ts` configures PostgreSQL, schema glob `./server/database/schema/*.ts` and migration output `./server/database/migrations`. These configuration fields are supported by installed Kit RC.4 types. The CLI command gates URL validation: migrate/push/pull/studio require a valid `NUXT_DATABASE_URL`; generate/check/up/export do not. This keeps credential-free generation separate from database access without importing Nuxt config into Kit. Scripts expose `db:generate`, `db:migrate`, `db:push` and `db:studio`. No schema, relations or migration artifacts exist; the migration output directory has not been created. The established production workflow is schema → generate → review/commit → migrate; push is reserved for appropriate development use.
 
 Neon, Better Auth and its Drizzle adapter are dependencies only. No connection, adapter instance, auth server/client, catch-all handler, session consumer, authorization, OAuth, email delivery or account screen exists. No database/provider connectivity or migration was exercised. External provisioning cannot be inferred from the repository. Planned Neon HTTP and Better Auth Relations v2 integration belong to Phases 2–3; they are not an implemented compatibility claim.
 
 ### Current implementation state
 
-The sole application page `/` renders “Hello Nuxt!” inside the default layout with a header/home link, empty placeholder SVG logo, external `example.com` link and localized footer app name/current year. There is no product data or protected content. The app shell has reactive locale metadata and fixed light styling. `robots.txt` permits crawling and advertises a static sitemap; both contain the placeholder `nuxt-auth-starter.com` origin. The README is still the generic Nuxt template with multiple package-manager instructions.
+The sole application page `/` renders “Hello Nuxt!” inside the default layout with a header/home link, empty placeholder SVG logo, external `example.com` link and localized footer app name/current year. There is no product data or protected content. The app shell has reactive locale metadata and fixed light styling. `robots.txt` permits crawling and advertises a static sitemap; both contain the placeholder `nuxt-auth-starter.com` origin. README now documents the supported setup and environment contract.
 
 ### Established decisions
 
@@ -76,15 +80,9 @@ Preserve Nuxt 4 runtime boundaries and generated tooling, shadcn-owned paths, Ta
 
 ### Known pending work
 
-Begin with [Phase 1 — Environment and configuration](../roadmap/phase1.md): reproducible runtime/package-manager setup, private settings validation, consistent environment naming and environment-specific guidance. The [roadmap](../roadmap/roadmap.md) then sequences database/auth, sessions and UI, meaningful tests/CI, security, deployment and reusable-starter cleanup. Tests accompany implementation; later quality gates do not imply production readiness now. Deferred domain features and infrastructure remain deferred.
+Continue with [Phase 2 — Database foundation](../roadmap/phase2.md): provision an isolated Neon development database. No database connection, auth schema generation, migration or Better Auth/email integration was performed in Phase 1. The [roadmap](../roadmap/roadmap.md) retains later phases unchecked. Superseded environment naming is recorded in [deprecated configuration](../deprecated/environment.md).
 
-The roadmap overview and phase plans live under `docs/roadmap/`; their references resolve to that directory. The generic README and unpinned runtime are acknowledged Phase 1 work, not evidence that the planned configuration already exists. No superseded implementation warrants deprecated documentation.
-
-2026-09-09 20:10 — Roadmap references corrected
-
-Phase 1 now links to the roadmap overview in its own directory. The previously recorded path discrepancy is resolved; readiness to begin Phase 1 is unchanged. Local documentation links and diff whitespace checks passed. Application validation results below remain those of the initial baseline; they were not rerun for this documentation-only correction.
-
-### Validation snapshot
+### Historical baseline validation snapshot (before Phase 1)
 
 Local review on Node 26.8.1 / pnpm 12.3.4; application source and dependency declarations were unchanged.
 
