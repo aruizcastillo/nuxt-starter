@@ -2,7 +2,7 @@
 
 ## Goal
 
-Make installation and private runtime configuration reproducible before connecting services. This is an implementation plan, not a record of completed work. The numbered headings preserve every checklist item in `docs/roadmap.md`; execute substeps in order.
+Make installation and private runtime configuration reproducible before connecting services. This is an implementation plan, not a record of completed work. The numbered headings preserve every checklist item in the [roadmap](./roadmap.md); execute substeps in order.
 
 ## Preconditions
 
