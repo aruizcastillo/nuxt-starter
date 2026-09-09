@@ -72,7 +72,7 @@ Neon, Better Auth and its Drizzle adapter are dependencies only. No connection, 
 
 ### Current implementation state
 
-The sole application page `/` renders “Hello Nuxt!” inside the default layout with a header/home link, empty placeholder SVG logo, external `example.com` link and localized footer app name/current year. There is no product data or protected content. The app shell has reactive locale metadata and fixed light styling. `robots.txt` permits crawling and advertises a static sitemap; both contain the placeholder `nuxt-auth-starter.com` origin. README now documents the supported setup and environment contract.
+The sole application page `/` renders “Hello Nuxt!” inside the default layout with a header/home link, starter SVG logo, external `example.com` link and localized footer app name/current year. There is no product data or protected content. The app shell has reactive locale metadata and fixed light styling. `robots.txt` permits crawling and advertises a static sitemap; both contain the placeholder `nuxt-auth-starter.com` origin. README now documents the supported setup and environment contract.
 
 ### Established decisions
 
@@ -96,3 +96,24 @@ Local review on Node 26.8.1 / pnpm 12.3.4; application source and dependency dec
 | Built-server HTTP smoke check (`node .output/server/index.mjs`, temporary loopback port) | Passed for English and Spanish requests using locale cookies and language headers: HTTP 200, expected HTML language, translated navigation label, homepage greeting and light theme. Server stopped after the checks. |
 
 Database mutations, provider calls and deployment were not run. The HTTP checks verify server-rendered HTML, not browser hydration, visual behavior or full keyboard accessibility; those remain unverified.
+
+
+### Phase 1 validation
+
+2026-09-10 01:44 — Phase 1 completed and roadmap synchronized
+
+Configuration implementation and runtime verification ran on 2026-09-09 with Node 24.21.0 / pnpm 12.3.4. The configuration source is unchanged since those checks; subsequent logo/Open Graph commits are outside Phase 1. Final documentation records the evidence below rather than implying external integrations or deployment were tested.
+
+| Check | Result |
+| --- | --- |
+| Frozen installation and `nuxt prepare` | Passed with Node 24.21.0 / pnpm 12.3.4. The pnpm pin required package-manager lock metadata; application dependency resolutions are unchanged and the final frozen install passed without further drift. |
+| `pnpm lint` | Passed; rerun on 2026-09-10 during completion. |
+| `pnpm typecheck` | Passed; rerun on 2026-09-10 during completion. |
+| `pnpm build` | Passed on 2026-09-09 with Nitro `node-server`. Non-fatal upstream DEP0155 export warnings (Vue/VueUse) and Rollup annotation warnings in Zod were emitted. |
+| On-use configuration checks | 16 missing/malformed/partial cases rejected safely and 6 valid/isolated cases passed using disposable values. Cases covered PostgreSQL protocol, secret length, HTTPS/origin restrictions, Google pairing and email pairing/sender format. |
+| Drizzle CLI boundary | Missing and malformed database URLs failed before connection with the variable name and no supplied value. Generation config loaded without credentials; no schema generation or database operation was performed. |
+| Previously built runtime overrides | All seven private values were overridden in fresh processes without rebuilding. A valid set also passed all three server parsers. |
+| Built-server HTTP and privacy | HTTP 200 on loopback with empty settings and with disposable markers. Private keys/markers were absent from rendered HTML/payload, and markers were absent from client assets. The built Nitro app was exercised directly; no diagnostic endpoint was added. |
+| `pnpm test:run` | Exit 1 on 2026-09-09: no test files found, as expected by the Phase 1 plan. This is not a passing test suite; no `passWithNoTests` setting or placeholder tests were added. |
+
+All five Phase 1 roadmap items and its verification checklist are complete. The next unchecked item is **Phase 2: provision an isolated Neon development database**. No database implementation, auth schema generation, Better Auth integration or later-phase functionality was started. Runtime smoke checks cover SSR output and configuration privacy, not browser hydration or a Vercel deployment.

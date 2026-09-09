@@ -6,11 +6,13 @@ Version baseline: Nuxt **4.5.2**, Better Auth/adapter **1.7.3**, Drizzle ORM/Kit
 
 ## Phase 1 — Environment and configuration · Required
 
-- [ ] Document supported Node/pnpm versions and reproducible installation.
-- [ ] Connect private runtime configuration and validate required settings.
-- [ ] Keep database tooling and application environment names consistent.
-- [ ] Define environment-specific configuration for local, preview and production.
-- [ ] Extend `.env.example` with email delivery settings when the provider is selected.
+2026-09-10 01:44 — Completed; implementation and verification are recorded in [project state](../current/project-state.md).
+
+- [x] Document supported Node/pnpm versions and reproducible installation.
+- [x] Connect private runtime configuration and validate required settings.
+- [x] Keep database tooling and application environment names consistent.
+- [x] Define environment-specific configuration for local, preview and production.
+- [x] Extend `.env.example` with email delivery settings when the provider is selected.
 
 ## Phase 2 — Database foundation · Required
 
