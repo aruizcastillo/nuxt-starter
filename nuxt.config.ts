@@ -33,6 +33,16 @@ export default defineNuxtConfig({
     ],
   },
 
+  typescript: {
+    nodeTsConfig: {
+      include: [
+        '../drizzle.config.ts',
+        '../vitest.config.ts',
+        '../test/unit/**/*.ts',
+      ],
+    },
+  },
+
   eslint: {
     config: {
       stylistic: true,

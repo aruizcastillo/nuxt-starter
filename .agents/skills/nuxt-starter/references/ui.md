@@ -54,4 +54,4 @@ Before implementing forms:
 
 Client-side validation is for UX. Server-side validation is required for untrusted input.
 
-Prefer reusable schemas when they genuinely improve correctness, but do not build a generic schema framework.
+Prefer reusable schemas when they genuinely improve correctness. Do not build a generic schema framework without a concrete need that it solves better than small, conventional schemas.

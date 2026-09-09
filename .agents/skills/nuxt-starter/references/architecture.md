@@ -28,21 +28,11 @@ app/components/ui/
 
 They follow shadcn-vue conventions.
 
-## Avoid premature abstraction
+## Deliberate abstraction
 
-Do not create by default:
+Start with framework primitives and small, conventional application modules. Introduce a layer when a real use case demonstrates that it creates a meaningful boundary, reduces demonstrated duplication, or isolates meaningful complexity.
 
-- repositories
-- services
-- service locators
-- dependency containers
-- generic contracts layers
-- generic CRUD engines
-- custom auth state layers
-- custom API client frameworks
-- runtime database schema abstractions
-
-Introduce a layer only when a real use case demonstrates that it reduces meaningful duplication or isolates meaningful complexity.
+Do not add generic CRUD engines, dependency containers, custom auth state layers, API-client frameworks, or runtime database-schema abstractions merely in anticipation of future needs.
 
 ## Dependencies
 

@@ -17,7 +17,7 @@ Before changing code:
 2. Resolve the exact versions of every relevant package.
 3. Inspect the relevant existing project files.
 4. Load the appropriate reference files below.
-5. Prefer official installed skills and official documentation for those exact versions.
+5. Follow `AGENTS.md` for the project's source hierarchy and architecture policy.
 
 Never implement a version-sensitive API from memory alone.
 
@@ -42,29 +42,11 @@ Load only the references relevant to the task:
 
 For cross-cutting tasks, load multiple references.
 
-## Documentation protocol
+## Versioned skill examples
 
-For each external library involved:
+Some bundled skills contain generic commands or examples using `@latest`, or describe a different version line. Do not execute those commands or adopt their generated output in this repository until their compatibility with the resolved installed version is verified. Prefer the project's installed CLI; otherwise use a reviewed, compatible pinned CLI version.
 
-1. Identify the package owner.
-2. Read the exact installed version from `package.json`.
-3. Use an official skill maintained by that project when available.
-4. Verify the implementation against official documentation applicable to that version.
-5. Check migration/upgrade guides when examples may belong to another version line.
-6. If ambiguity remains, inspect official source code, installed package types, or installed package source.
-7. Do not fall back to community examples until official sources are exhausted.
-
-Official project guidance outranks community skills.
-
-## Installed skill expectations
-
-When available, use official skills for:
-
-- Better Auth
-- shadcn-vue
-- VueUse
-
-Community skills may exist for Nuxt/Vue/i18n/Vite/Vitest/pnpm/Reka UI. Treat them as supplementary, never as higher authority than official documentation.
+Official project skills and documentation remain primary references. When they do not prescribe an application choice, follow the verified current ecosystem convention defined by `AGENTS.md`.
 
 ## Completion protocol
 

@@ -8,7 +8,7 @@ license: MIT
 
 Unstyled, accessible Vue 3 component primitives. WAI-ARIA compliant. Previously Radix Vue.
 
-**Current version:** v2.8.0 (January 2026)
+**Version note:** This bundled skill was authored around Reka UI v2.8. Verify all APIs against the project's resolved installed version before use.
 
 ## When to Use
 

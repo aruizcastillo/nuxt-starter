@@ -10,7 +10,7 @@ metadata:
 
 # Vite
 
-> Based on Vite 8 beta (Rolldown-powered). Vite 8 uses Rolldown bundler and Oxc transformer.
+> This bundled reference targets Vite 8 beta (Rolldown-powered). Verify compatibility with the project's resolved Nuxt/Vite toolchain before using Vite 8-specific guidance.
 
 Vite is a next-generation frontend build tool with fast dev server (native ESM + HMR) and optimized production builds.
 

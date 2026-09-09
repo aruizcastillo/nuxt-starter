@@ -2,21 +2,22 @@
 
 This repository is a clean, reusable Nuxt application starter.
 
-The goal is not merely to make features work. Implementations must follow the current, documented, idiomatic approach of each framework and library used by the project.
+The goal is not merely to make features work. Implementations must follow the current, idiomatic approach compatible with the exact installed version of each framework and library used by the project.
 
-Avoid custom abstractions, compatibility hacks, historical patterns, and unnecessary infrastructure when an official supported solution exists.
+Use official project skills and official documentation where they are authoritative. When they are silent, non-prescriptive, or do not define application architecture, use a current, established ecosystem convention verified as compatible with the exact installed version. Use custom solutions only when a concrete requirement justifies them.
 
 ## Core principle
 
-Use the officially documented solution for the exact installed version of each technology.
+Prefer the current, idiomatic standard for the exact installed version of each technology. Official guidance is authoritative for its APIs, configuration, security guidance, and framework-owned behavior; established ecosystem conventions are valid for application choices that official guidance does not prescribe.
 
 Before implementing anything version-sensitive:
 
-1. Read `package.json`.
-2. Identify the exact installed package version.
+1. Read `package.json` and the lockfile.
+2. Identify the exact resolved package version from the lockfile or installed package. `package.json` remains authoritative for the project's declared dependency constraints.
 3. Use documentation applicable to that version or version line.
 4. Check official migration/upgrade documentation when APIs may have changed.
-5. If documentation is unclear, inspect official source code, package types, or the installed package before making assumptions.
+5. If official guidance is silent or non-prescriptive, verify a current, established ecosystem convention against that exact version.
+6. If ambiguity remains, inspect official source code, package types, or the installed package before making assumptions.
 
 Never assume that examples from search results, blog posts, Stack Overflow, GitHub discussions, old docs, or model knowledge apply to the installed version.
 
@@ -30,18 +31,37 @@ When sources or approaches disagree, use this priority:
 4. Official migration and upgrade guides
 5. Official source code and installed package types
 6. Existing intentional conventions in this repository
-7. Widely accepted current ecosystem conventions
+7. Widely accepted current ecosystem conventions, verified for the exact installed version
 8. High-quality community skills/documentation
 9. Other community examples
 10. Agent prior knowledge
 
 Never override a documented project decision merely because another architecture is technically valid.
 
+Use an ecosystem convention only when higher-priority sources do not prescribe the choice. It cannot override official API, security, compatibility, or framework-boundary guidance.
+
 ## Version awareness is mandatory
 
-`package.json` is authoritative.
+`package.json` is authoritative for declared dependency constraints. The lockfile or installed package is authoritative for the exact resolved version used for version-sensitive work.
 
-Follow `package.json`.
+## Project documentation
+
+Before planning or changing an established area, review the relevant files under `docs/current/` and `docs/deprecated/`.
+
+Maintain this documentation as part of the implementation work:
+
+- `docs/current/` records completed architecture, implemented integrations, current project decisions, and relevant implementation history.
+- `docs/deprecated/` records superseded approaches, replaced decisions, and patterns that should not be reintroduced without explicit justification.
+- When a phase or significant architectural area is completed, create or update the relevant file in `docs/current/`.
+- When an established approach is replaced or intentionally abandoned, move or summarize the obsolete guidance in `docs/deprecated/`.
+- Keep documentation concise and topic-oriented. Update existing topic files instead of creating a new file for every small task.
+- Documentation must describe the current project state and only preserve implementation history that is useful for future maintenance.
+
+Use this minimum format for entries:
+
+```text
+YYYY-MM-DD HH:mm — Short title
+```  
 
 ### Prerelease rule
 
@@ -63,9 +83,9 @@ framework primitive
 → application code
 ```
 
-Avoid repository/service/locator/container/contract layers by default.
+Avoid speculative repository/service/locator/container/contract layers by default.
 
-Do not build generic CRUD frameworks, generic database abstractions, custom auth frameworks, or runtime schema systems unless a real requirement demonstrates the need.
+Introduce a layer or custom solution when a concrete use case creates a meaningful boundary, isolates real complexity, or reduces demonstrated duplication. Do not build generic CRUD frameworks, generic database abstractions, custom auth frameworks, or runtime schema systems merely in anticipation of future needs.
 
 ## Framework ownership
 
@@ -109,7 +129,7 @@ Follow the installed official Better Auth skills and documentation for the insta
 
 Do not mirror Better Auth session state into Pinia by default.
 
-Do not create custom auth API proxies, custom auth controllers, manual session synchronization, first-user-admin behavior, fake email verification, or client-only authorization.
+Avoid custom auth API proxies, controllers, and manual session synchronization unless a concrete, verified integration need justifies them and Better Auth remains authoritative. Do not add first-user-admin behavior, fake email verification, or client-only authorization.
 
 Server-side authorization remains authoritative.
 
@@ -119,7 +139,7 @@ Use current Drizzle 1.0 RC documentation for the installed version.
 
 Prefer typed relational schemas and current relations APIs.
 
-Do not create runtime tables, generic JSONB-backed domain models, or runtime DDL as a data-access abstraction.
+Do not use generic JSONB-backed domain models, runtime tables, or runtime DDL as a way to avoid deliberate schema design or as a generic data-access abstraction. A concrete, documented operational need requires an explicit reviewed design.
 
 Production schema evolution uses versioned migrations:
 
@@ -220,8 +240,8 @@ When something fails:
 3. Read current official documentation.
 4. Check migration/upgrade notes.
 5. Inspect package types/source if needed.
-6. Implement the documented solution.
-7. Only then consider a workaround.
+6. Implement the documented solution where one exists; where official guidance is non-prescriptive, use a verified current ecosystem convention.
+7. Only then consider a workaround or custom solution, documenting why the supported and conventional options do not meet the requirement.
 
 Do not reflexively use `<ClientOnly>`, `onMounted`, timers, `eslint-disable`, `@ts-ignore`, dependency downgrades, pnpm overrides, manual cookie forwarding, or duplicated state.
 
@@ -252,4 +272,4 @@ Never claim completion while knowingly leaving unexplained lint, type, test, or 
 
 ## Final rule
 
-When choosing between a clever custom solution and the current documented solution provided by the framework/library, use the documented solution.
+Choose the current, idiomatic approach compatible with the exact installed version: official guidance where authoritative, established conventions where official guidance is silent, and custom solutions only when a concrete requirement justifies them.

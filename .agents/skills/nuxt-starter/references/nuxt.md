@@ -32,7 +32,7 @@ defineNuxtPlugin()
 defineEventHandler()
 ```
 
-Do not introduce generic alternatives when Nuxt already solves the requirement.
+Use a small, conventional application abstraction only when the Nuxt primitive does not provide the required behavior or boundary; preserve SSR, hydration, and generated types.
 
 ## SSR and hydration
 

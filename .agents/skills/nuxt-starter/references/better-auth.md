@@ -17,7 +17,7 @@ Expected official skills may include:
 
 Better Auth owns authentication and session state.
 
-Do not build a parallel authentication framework around it.
+Avoid a parallel authentication framework. Introduce a wrapper, proxy, or separate state only for a concrete, verified integration need while keeping Better Auth authoritative for authentication and session state.
 
 ## Nuxt integration
 

@@ -1,2 +1,5 @@
 User-Agent: *
 Disallow:
+
+
+Sitemap: https://nuxt-auth-starter.com/sitemap.xml
