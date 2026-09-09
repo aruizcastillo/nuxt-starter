@@ -52,10 +52,12 @@ Make installation and private runtime configuration reproducible before connecti
 ## Phase verification
 
 - [x] Confirm the documented Node/pnpm pair performs a frozen installation without lockfile drift and prepares Nuxt successfully.
-- [ ] Exercise missing, malformed and partial settings; errors reveal names only. Verify valid runtime overrides still apply when starting previously built output.
-- [ ] Inspect rendered Nuxt payload and client assets using disposable marker values; no private setting may appear there.
-- [ ] Run `pnpm lint`, `pnpm typecheck` and `pnpm build`. Record `pnpm test:run` reporting no tests at this stage; do not add `passWithNoTests` or meaningless tests to manufacture a pass. Actual suites begin in Phase 3.
+- [x] Exercise missing, malformed and partial settings; errors reveal names only. Verify valid runtime overrides still apply when starting previously built output.
+- [x] Inspect rendered Nuxt payload and client assets using disposable marker values; no private setting may appear there.
+- [x] Run `pnpm lint`, `pnpm typecheck` and `pnpm build`. Record `pnpm test:run` reporting no tests at this stage; do not add `passWithNoTests` or meaningless tests to manufacture a pass. Actual suites begin in Phase 3.
 
-## Expected state after completion
+2026-09-10 01:44 — Phase 1 complete. Missing/malformed/partial settings, credential-free tooling config, runtime overrides and private payload/client boundaries passed verification. Lint, typecheck and build passed; the test command reports the planned empty suite. See [validation evidence](../current/project-state.md#phase-1-validation).
+
+## Completed state
 
 Installation, environment naming and runtime validation are documented and consistent. No database connection, auth feature or email delivery has been implemented yet. Subsequent phases use the same private variable contract.
