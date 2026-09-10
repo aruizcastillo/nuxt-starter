@@ -74,7 +74,7 @@ npm install --global pnpm@12.3.4
 
 7. Open `http://localhost:3000`.
 
-The public shell can start with empty service values, but the database and auth endpoint are not usable until the required local values below are configured and the migration is applied.
+The public pages can start with empty service values, but the database and auth endpoint are not usable until the required local values below are configured and the migration is applied.
 
 ## Environment configuration
 
@@ -108,18 +108,43 @@ All `NUXT_*` settings are private Nuxt runtime configuration. For local `dev`, `
 
 ## Database setup
 
-1. In Neon, create a project if needed and create or select a development branch that is isolated from production data. See [Neon branching](https://neon.com/docs/introduction/branching) and [connection guidance](https://neon.com/docs/connect/connect-from-any-app).
-2. Obtain both connection strings for the same branch, database, and role:
-   - pooled connection for `DATABASE_URL` and `NUXT_DATABASE_URL`;
-   - direct connection for `DATABASE_URL_UNPOOLED`.
-3. Set `NEON_BRANCH` to the selected branch name and confirm every database variable targets that branch before migrating.
-4. Apply the migration already committed under `server/database/migrations/`:
+The repository includes Neon CLI 4.14.3. After installing dependencies and creating `.env`, authenticate:
 
-   ```sh
-   pnpm db:migrate
-   ```
+```sh
+pnpm exec neon auth
+pnpm exec neon orgs list
+```
+
+For a fresh setup, create and link a development-only project. Substitute an organization ID from the preceding command and a [supported region](https://neon.com/docs/introduction/regions) close to the application runtime:
+
+```sh
+pnpm exec neon link --org-id <org-id> --project-name nuxt-auth-starter-dev --region-id <region-id>
+```
+
+If using an existing Neon project instead, link it interactively and create or select a dedicated development branch:
+
+```sh
+pnpm exec neon link
+pnpm exec neon checkout dev
+```
+
+Do not select a production branch. Once the intended branch is pinned in the ignored `.neon` context file, pull only the database settings used by this starter:
+
+```sh
+pnpm exec neon env pull --file .env --env DATABASE_URL --env DATABASE_URL_UNPOOLED --env NEON_BRANCH
+```
+
+The pull preserves the other entries in `.env`. It supplies a pooled `DATABASE_URL` for application/serverless traffic, a direct `DATABASE_URL_UNPOOLED` for Drizzle migrations, and the selected `NEON_BRANCH`. Copy the pooled `DATABASE_URL` value to `NUXT_DATABASE_URL`; Neon does not manage that Nuxt-specific key.
+
+Confirm that all three URLs refer to the same branch, database, and role, then apply the migration already committed under `server/database/migrations/`:
+
+```sh
+pnpm db:migrate
+```
 
 Drizzle Kit loads `.env` directly and reads `DATABASE_URL_UNPOOLED`; it does not use Nuxt runtime configuration.
+
+See the [Neon CLI quickstart](https://neon.com/docs/cli/quickstart), [branching documentation](https://neon.com/docs/introduction/branching), and [connection guidance](https://neon.com/docs/connect/connect-from-any-app) for provider reference.
 
 For future schema changes, use the reviewed workflow:
 
@@ -148,7 +173,6 @@ This is the completed server foundation from Phase 3, not a finished authenticat
 | `pnpm test:run` | Run all tests once, including live database auth tests. See the constraint below. |
 | `pnpm build` | Create the production build. |
 | `pnpm preview` | Preview a completed production build locally. |
-| `pnpm generate` | Generate a static build when that output mode is appropriate. |
 | `pnpm db:generate` | Generate a migration from schema changes. |
 | `pnpm db:migrate` | Apply committed migrations using `DATABASE_URL_UNPOOLED`. |
 | `pnpm db:push` | Push schema changes directly for deliberate development-only use. |
@@ -163,17 +187,17 @@ pnpm exec vitest run --project unit
 pnpm build
 ```
 
-`pnpm test:run` additionally mutates and cleans up test accounts on a specifically allowlisted disposable Neon branch. The current allowlist is repository-instance-specific, so a new clone cannot run the live suite merely by supplying an arbitrary database URL. It fails rather than skipping the integration tests or risking another database. Maintainers can follow [the explicit test-target procedure](docs/current/auth.md#test-target-and-commands); making arbitrary fresh-clone test targets safely configurable remains future test/CI work.
+`pnpm test:run` includes live auth tests that create and remove accounts. Before running it, provision a separate disposable Neon test branch, migrate it, configure its test environment values, and make sure `test/helpers/auth.ts` explicitly recognizes that exact target. The guard intentionally rejects arbitrary database URLs, so a fresh clone cannot enable the live suite through environment configuration alone. Never point it at development or production. See the [test-target procedure](docs/current/auth.md#test-target-and-commands) for the required variables and commands.
 
 There is currently no Markdown-specific validation script.
 
 ## Deployment
 
-The intended hosting path is Vercel with Neon, but the repository does not yet contain a completed or verified production deployment workflow. Vercel runtime selection, isolated Preview/Production databases, a controlled migration step, provider callbacks, email delivery, production security checks, and recovery procedures remain [Phase 9 work](docs/roadmap/phase9.md).
+`pnpm build` produces the current server build, and `pnpm preview` runs it locally. Vercel with Neon is the intended hosting path, but a verified production deployment workflow is not yet complete.
 
-For deployment experiments, configure the same required environment variables separately for Vercel Development, Preview, and Production scopes. Use independent database targets and auth secrets, set `NUXT_BETTER_AUTH_URL` to each stable canonical HTTPS origin, and do not treat `pnpm preview` as a Vercel Preview deployment. See [Vercel environment variables](https://vercel.com/docs/environment-variables).
+Vercel deployments must configure the required variables separately for Development, Preview, and Production, using isolated database targets, independent auth secrets, and the correct canonical HTTPS `NUXT_BETTER_AUTH_URL` for each environment. See [Vercel environment variables](https://vercel.com/docs/environment-variables).
 
-No reproducible production deployment can be claimed until the Phase 9 checklist is completed.
+The controlled production migration step, provider callbacks, production security checks, and recovery procedures remain [Phase 9 work](docs/roadmap/phase9.md). Do not treat the starter as reproducibly production-deployable until that work is complete.
 
 ## Further documentation
 
