@@ -72,7 +72,7 @@ Neon and Drizzle now back the server-only `createDatabase` HTTP factory describe
 
 ### Current implementation state
 
-The sole application page `/` renders “Hello Nuxt!” inside the default layout with a header/home link, empty placeholder SVG logo, external `example.com` link and localized footer app name/current year. There is no product data or protected content. The app shell has reactive locale metadata and fixed light styling. `robots.txt` permits crawling and advertises a static sitemap; both contain the placeholder `nuxt-auth-starter.com` origin. README now documents the supported setup and environment contract.
+The sole application page `/` renders “Hello Nuxt!” inside the default layout with a header/home link, starter SVG logo, external `example.com` link and localized footer app name/current year. There is no product data or protected content. The app shell has reactive locale metadata and fixed light styling. `robots.txt` permits crawling and advertises a static sitemap; both contain the placeholder `nuxt-auth-starter.com` origin. README now documents the supported setup and environment contract.
 
 ### Established decisions
 
