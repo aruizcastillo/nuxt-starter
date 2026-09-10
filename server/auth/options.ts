@@ -3,6 +3,8 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { authTables, type createDatabase } from '../database/clients/neon'
 import type { parseAuthConfig } from '../utils/config'
 
+// Pure Better Auth factory.
+// Environment loading and database creation stay outside this function, making the auth configuration reusable from Nuxt runtime, tooling and tests.
 export function createAuth(settings: ReturnType<typeof parseAuthConfig>, database: ReturnType<typeof createDatabase>) {
   return betterAuth({
     database: drizzleAdapter(database, {
@@ -15,6 +17,8 @@ export function createAuth(settings: ReturnType<typeof parseAuthConfig>, databas
     basePath: '/api/auth',
     // Phase 4 connects verification delivery and Google policy/credentials.
     emailAndPassword: { enabled: true },
+    // Validate sessions against the database on each request.
+    // Cookie caching is disabled by default in Better Auth.
     session: { cookieCache: { enabled: false } },
   })
 }
