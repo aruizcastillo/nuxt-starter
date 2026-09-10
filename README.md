@@ -8,26 +8,22 @@ The current implementation includes the Better Auth server endpoint, core auth s
 
 ## Requirements
 
-- Git.
-- Node.js `>=24.11.0 <25`. The tested version in `.nvmrc` is `24.21.0`.
-- pnpm `12.3.4`, matching the `packageManager` field in `package.json`.
-- A Neon account and an isolated Postgres branch/database for development.
+* Node.js `>=24.11.0 <25`
+* pnpm `12`
+* A Neon account with an isolated Postgres development branch/database
 
-Use the same Node major in local development, CI, and deployment. With POSIX nvm:
+Tested with Node `24.21.0` and pnpm `12.3.4`.
+
+> `.nvmrc` pins the tested Node version, while the `packageManager` field in `package.json` pins the project's pnpm version for reproducible installs.
+
+With nvm:
 
 ```sh
-nvm install
-nvm use
+nvm install 24
+nvm use 24
 ```
 
-With nvm-windows in PowerShell:
-
-```powershell
-nvm install 24.21.0
-nvm use 24.21.0
-```
-
-Install the pinned pnpm release:
+Install the tested pnpm version:
 
 ```sh
 npm install --global pnpm@12.3.4
@@ -55,8 +51,6 @@ npm install --global pnpm@12.3.4
    ```sh
    cp .env.example .env
    ```
-
-   In PowerShell, use `Copy-Item .env.example .env` instead.
 
 4. Create or select an isolated development database in Neon, then complete `.env` as described in [Environment configuration](#environment-configuration) and [Database setup](#database-setup).
 
