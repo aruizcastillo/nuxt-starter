@@ -17,6 +17,7 @@
     "typecheck": "nuxt typecheck",
     "test": "vitest",
     "test:run": "vitest run",
+    "auth:generate": "pnpm dlx auth@1.7.3 generate --config ./server/auth/cli.ts --output ./server/database/schema/auth.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",

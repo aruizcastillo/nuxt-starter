@@ -49,6 +49,8 @@ export default defineNuxtConfig({
         '../drizzle.config.ts',
         '../vitest.config.ts',
         '../test/unit/**/*.ts',
+        '../test/helpers/**/*.ts',
+        '../test/e2e/**/*.ts',
       ],
     },
   },

@@ -6,6 +6,15 @@ export default defineConfig({
     projects: [
       {
         test: {
+          name: 'e2e',
+          include: ['test/e2e/**/*.test.ts'],
+          environment: 'node',
+          testTimeout: 30000,
+          hookTimeout: 30000,
+        },
+      },
+      {
+        test: {
           name: 'unit',
           include: ['test/unit/**/*.{test,spec}.ts'],
           environment: 'node',
