@@ -5,8 +5,8 @@ const databaseSchema = z.object({
   databaseUrl: z.url({ protocol: /^postgres(ql)?$/, hostname: /.+/ }),
 })
 
-// Shared parser for runtime configuration.
-// Converts Zod field names to their corresponding NUXT_* environment variables so configuration errors are easier to diagnose.
+// Shared parser for private configuration used by Nuxt runtime and tooling.
+// Nuxt runtime callers should pass values from useRuntimeConfig(event).
 function parseSettings<T>(schema: z.ZodType<T>, config: unknown): T {
   const result = schema.safeParse(config)
   if (!result.success) {

@@ -17,8 +17,7 @@ export function createAuth(settings: ReturnType<typeof parseAuthConfig>, databas
     basePath: '/api/auth',
     // Phase 4 connects verification delivery and Google policy/credentials.
     emailAndPassword: { enabled: true },
-    // Validate sessions against the database on each request.
-    // Cookie caching is disabled by default in Better Auth.
+    // Cookie caching is explicitly disabled so session reads use the database.
     session: { cookieCache: { enabled: false } },
   })
 }
