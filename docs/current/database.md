@@ -1,5 +1,9 @@
 # Database foundation
 
+2026-09-10 15:54 — Phase 3 core auth migration applied after disposable validation
+
+The generated migration `20260910134024_bumpy_baron_strucker` is applied to `dev` and `test-phase3`, with matching catalogs/history and idempotent reruns. Only the migration changed dev; all credential-flow tests ran on the disposable branch. See [auth validation](auth.md#validation-checkpoint). Phase 2 verification below remains historical evidence for the pre-auth foundation.
+
 2026-09-10 14:48 — Completed database foundation and environment convention
 
 `server/database/clients/neon.ts` exports `createDatabase(databaseUrl: string)` with its typed return inferred. It constructs `drizzle({ client: neon(databaseUrl), relations })` with the installed Neon 1.1.0 and Drizzle ORM 1.0.0-rc.4. Phase 3 adds full core-table Relations v2 entries followed by generated auth relation parts. This matches the [official Neon integration](https://orm.drizzle.team/docs/connect-neon) and the installed RC.4 types. It creates no persistent pool or module-global client. Constructing the client does not execute a query.

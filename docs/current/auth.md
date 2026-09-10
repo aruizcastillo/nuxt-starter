@@ -58,6 +58,35 @@ The separate Node e2e project uses `@nuxt/test-utils/e2e` to build and start a r
 - `pnpm build` with isolated settings: passed. Existing non-fatal Rolldown timing, Zod annotation and Vue/VueUse export warnings remain.
 - Development was rechecked empty before the committed replay and final migration. No test accounts were created there.
 
+2026-09-10 15:54 — Phase 3 complete; committed replay and development migration verified
+
+Implementation and full generated artifacts were committed in `8428e04`. The disposable branch was reset from the still-empty `dev` parent, confirmed empty, and the committed migration replayed successfully. Its tables, columns, constraints, indexes and migration history matched the first test application (excluding only the application timestamp). A second migrate retained exactly one history row.
+
+Only after the live tests, build and committed replay passed was the migration applied to `dev`. The development catalog and history match the disposable target; its second migrate was also a no-op. The migration is `20260910134024_bumpy_baron_strucker`, hash `01d8d61940f53db3a97c295b6634e1daf10a8db207deff0a3c9c73131e0379e5`. The additional `drizzle.__drizzle_migrations` table is Kit-owned bookkeeping, not an auth/domain table.
+
+Public build assets passed checks for the supplied private credentials, database runtime key and server dependency imports. No application UI changed; browser hydration/accessibility work remains with the later client/UI phases. No dependencies were upgraded, `drizzle.config.ts` and the environment variable strategy are unchanged, and production was untouched. The disposable branch is retained for explicit test runs; its local settings remain ignored. Local development auth secret/base URL remain for the developer to populate as documented in README.
+
+All Phase 3 checklist items are complete. Phase 4 has not been implemented.
+
+## File inventory
+
+Created (11 tracked files):
+
+- `server/auth/options.ts`, `server/auth/cli.ts`, `server/utils/auth.ts`.
+- `server/api/auth/[...all].ts`.
+- `server/database/schema/auth.ts`.
+- `server/database/migrations/20260910134024_bumpy_baron_strucker/migration.sql` and `snapshot.json`.
+- `test/helpers/auth.ts`, `test/e2e/auth-server.test.ts`, `test/unit/config.test.ts`.
+- `docs/current/auth.md`.
+
+Modified (9 tracked files):
+
+- `server/database/clients/neon.ts`, `nuxt.config.ts`, `vitest.config.ts`, `package.json`.
+- `README.md`, `docs/current/database.md`, `docs/current/project-state.md`.
+- `docs/roadmap/phase3.md`, `docs/roadmap/roadmap.md` (completion status only).
+
+Local-only: ignored `.env.test-phase3` holds the disposable settings. One-off diagnostics under ignored `.cache/phase3/` are not application tooling or committed deliverables.
+
 ## References
 
 - [Better Auth Nuxt handler](https://better-auth.com/docs/integrations/nuxt), [Relations v2 adapter](https://better-auth.com/docs/adapters/drizzle), [CLI](https://better-auth.com/docs/concepts/cli).

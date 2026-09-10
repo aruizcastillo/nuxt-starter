@@ -4,7 +4,7 @@
 
 2026-09-09 20:31 — Phase 1 environment and configuration
 
-Phases 1–2 are complete. Phase 3 adds the Better Auth server, generated core schema/migration and nine passing parser/live-server tests; its migration validation is recorded in [auth state](auth.md). The public UI shell remains the only application page functionality. Email delivery, Google and production access policy remain Phase 4 work. Timestamps use Europe/Madrid. Database infrastructure and environment conventions are in [database state](database.md).
+Phases 1–3 are complete. Phase 3 adds the Better Auth server, generated core schema/migration and nine passing parser/live-server tests; its committed replay and development migration validation are recorded in [auth state](auth.md). The public UI shell remains the only application page functionality. Email delivery, Google and production access policy remain Phase 4 work. Timestamps use Europe/Madrid. Database infrastructure and environment conventions are in [database state](database.md).
 
 ### Stack
 

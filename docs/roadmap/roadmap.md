@@ -23,11 +23,13 @@ Version baseline: Nuxt **4.5.2**, Better Auth/adapter **1.7.3**, Drizzle ORM/Kit
 
 ## Phase 3 — Better Auth server and initial migration · Required
 
-- [ ] Configure Better Auth and its Drizzle adapter for the selected authentication methods.
-- [ ] Produce the compatible auth schema without additional domain tables.
-- [ ] Generate, review and commit the initial migration.
-- [ ] Apply the migration and verify setup against an empty database.
-- [ ] Expose the documented Nuxt auth handler and verify session creation, lookup and revocation.
+2026-09-10 15:54 — Complete; [auth implementation and validation](../current/auth.md).
+
+- [x] Configure Better Auth and its Drizzle adapter for the selected authentication methods.
+- [x] Produce the compatible auth schema without additional domain tables.
+- [x] Generate, review and commit the initial migration.
+- [x] Apply the migration and verify setup against an empty database.
+- [x] Expose the documented Nuxt auth handler and verify session creation, lookup and revocation.
 
 ## Phase 4 — Authentication methods and server authorization · Required
 
