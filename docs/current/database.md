@@ -1,6 +1,6 @@
 # Database foundation
 
-2026-09-10 01:57 — Neon HTTP client and migration procedure
+2026-09-10 14:48 — Completed database foundation and environment convention
 
 `server/database/clients/neon.ts` exports `createDatabase(databaseUrl: string): NeonHttpDatabase`. It constructs `drizzle({ client: neon(databaseUrl) })` with the installed Neon 1.1.0 and Drizzle ORM 1.0.0-rc.4. This matches the [official Neon integration](https://orm.drizzle.team/docs/connect-neon) and the installed RC.4 types. It creates no persistent pool, tables, migrations or module-global client. Constructing the client does not execute a query.
 
@@ -10,9 +10,7 @@ The selected transport is HTTP for one-shot queries. It does not support interac
 
 ## Development target
 
-2026-09-10 02:36 — Repository linked to Neon development branch
-
-Maintainer-reported setup (no Neon command or live query was run for this documentation update):
+Verified through the authenticated Neon CLI metadata and read-only queries using the existing Drizzle factory:
 
 | Setting | Current value |
 | --- | --- |
@@ -20,10 +18,14 @@ Maintainer-reported setup (no Neon command or live query was run for this docume
 | Project | `ancient-water-37006854` |
 | Active branch | `dev` |
 | Branch ID | `br-green-sky-zadolgsg` |
+| Endpoint | `ep-patient-mud-zacnbylx` |
+| Region | `aws-eu-west-2` (London) |
+| Database | `nuxt_auth_starter_db` |
+| Role / database owner | `nuxt_auth_starter_db_owner` |
 | Repository link | `.neon` |
-| Local development environment | `.env` (the previous `.env.local` is absent) |
+| Local development environment | `.env` |
 
-2026-09-10 14:15 — Final local environment convention
+## Environment convention
 
 | Location | Purpose |
 | --- | --- |
@@ -31,11 +33,10 @@ Maintainer-reported setup (no Neon command or live query was run for this docume
 | `.env.example` | Committed template: variable names with empty values and no secrets. All values are currently empty, including `NEON_BRANCH`; use `dev` locally. |
 | `.env.production` | Optional local-only production reference, ignored and untracked. Never load it by default, commit it, or use it as deployment configuration. |
 | Vercel environment configuration | Authoritative values for Preview and Production, scoped separately. |
-| `.env.local` | Not used by the final convention and currently absent. Do not introduce a second automatically loaded local source. |
 
-`NUXT_DATABASE_URL` is the private Nuxt runtime override and mirrors Neon’s pooled `DATABASE_URL`. Neon manages `DATABASE_URL`, `DATABASE_URL_UNPOOLED` (direct) and `NEON_BRANCH`. Both URL names remain intentional; there is no build-time alias mapping. The direct URL is designated for migration tooling. **Pending implementation:** `drizzle.config.ts` still reads `NUXT_DATABASE_URL` for connecting commands; it has not yet switched migration access to `DATABASE_URL_UNPOOLED`.
+`NUXT_DATABASE_URL` is the private Nuxt runtime override and mirrors Neon’s pooled `DATABASE_URL`. Neon manages `DATABASE_URL`, `DATABASE_URL_UNPOOLED` (direct) and `NEON_BRANCH`. Both URL names remain intentional; there is no build-time alias mapping. The direct URL is designated for migration tooling. `drizzle.config.ts` reads `DATABASE_URL_UNPOOLED` directly and includes `dbCredentials` only when it is nonempty. Drizzle Kit owns command-specific credential requirements.
 
-The current `.env` contains matching pooled `NUXT_DATABASE_URL`/`DATABASE_URL` and a direct `DATABASE_URL_UNPOOLED`; all three URLs request TLS. `.env.production` has the same arrangement for its production-labelled reference. Values were inspected without printing credentials; labels and URL structure do not constitute live target or permission verification.
+The current `.env` contains matching pooled `NUXT_DATABASE_URL`/`DATABASE_URL` and a direct `DATABASE_URL_UNPOOLED`; all three URLs request TLS. `.env.production` has the same arrangement for its production-labelled reference. Live checks matched the development URL to the dev endpoint and verified database identity/permissions. Production reference values were not loaded for these checks.
 
 The installed Neon CLI 4.14.3 help confirms `--file` selects the destination and preserves non-Neon lines. For a future explicit development pull, use:
 
@@ -53,11 +54,13 @@ The installed skills are `neon`, `neon-postgres`, `neon-postgres-branches` and `
 
 Authentication remains self-hosted Better Auth; Neon Auth is intentionally unused. Do not run or introduce `neon config init`, `neon.ts`, `neon deploy` or `@neon/config`.
 
-Project and branch selection are now recorded. Region, database/role identifiers, isolation from production data, schema emptiness, migration privileges and live connectivity still need verification when implementation resumes. Keep credentials out of documentation and logs; production runtime and elevated migration credentials remain separate Phase 9 concerns.
+The existing non-default `dev` branch has its own endpoint, and its database has no user tables or views. Neon records its original creation as `parent-data`; the current empty database was verified without connecting to the parent or production. Reused the existing London region as instructed; align Vercel compute with it during Phase 9 rather than moving the database in this phase.
+
+The development role owns the database, has database CREATE and public-schema CREATE/USAGE, and is not a superuser. These catalog checks establish the privileges needed for the planned initial migration without testing them through DDL. Actual migration generation/application remains Phase 3. Local non-secret target notes are in ignored `.data/neon-development.md`. Production runtime and elevated migration credentials remain separate Phase 9 concerns.
 
 To rotate development credentials, select the exact project/branch/role and reset that role's password in Neon, then replace the local connection URL. Resetting credentials interrupts connections; verify the target first. See [Neon's role password operation](https://api-docs.neon.tech/reference/resetprojectbranchrolepassword).
 
-When implementation resumes, run a one-off server-side ``db.execute(sql`select 1`)`` through the factory and validated URL. Use a bounded diagnostic process, catch failures without printing the raw driver error, and record only success/failure. Verify missing settings, wrong credentials and an unreachable endpoint separately. Inspect the target's existing schema and role privileges with read-only queries; do not create test/domain tables to prove connectivity. These live checks remain pending.
+One-off checks used the current factory and validated development URL for `select 1`, identity and catalog queries. No query runs on application startup and no diagnostic endpoint was added. Errors were caught and sanitized in the one-off diagnostic process; the factory continues to expose normal driver errors to server callers, which must handle them appropriately when endpoints are introduced.
 
 ## Migration procedure
 
@@ -67,31 +70,27 @@ Drizzle Kit 1.0.0-rc.4 owns migration generation and metadata. Its installed typ
 - Migrations: `server/database/migrations`.
 - Scripts: `pnpm db:generate`, `pnpm db:migrate`, `pnpm db:push`, `pnpm db:studio`.
 
-The production workflow is **generate → review SQL and metadata → commit all generated artifacts → migrate**. Before migration, identify the project/branch/endpoint in Neon and compare the selected database/role with the intended target. Confirm backups/recovery arrangements and review destructive statements and data transformations. The final convention assigns migration credentials to `DATABASE_URL_UNPOOLED`; the current Kit consumer still needs that change before this convention is fully implemented. Kit loads dotenv outside Nuxt and does not share a runtime abstraction with the application.
+The production workflow is **generate → review SQL and metadata → commit all generated artifacts → migrate**. Before migration, identify the project/branch/endpoint in Neon and compare the selected database/role with the intended target. Confirm backups/recovery arrangements and review destructive statements and data transformations. Kit uses the direct `DATABASE_URL_UNPOOLED` for database access, independently of the private Nuxt runtime override. Kit loads dotenv outside Nuxt and does not share a runtime abstraction with the application.
 
 Let RC.4 generate its own directory and metadata format; do not hand-author snapshots or assume the old 0.x journal layout. Never rewrite a migration already applied to a shared environment. Fix mistakes with reviewed forward migrations. `db:push` is development-only. Do not migrate during requests, imports, builds or function cold starts.
 
-Phase 3 owns initial auth schema generation and the first migration. Acceptance requires reviewing and committing every generated artifact, replaying against an isolated empty target, and verifying that corrective changes use forward migrations. No schema or migration was generated or applied in Phase 2 implementation work so far.
+Phase 3 owns initial auth schema generation and the first migration. Acceptance requires reviewing and committing every generated artifact, replaying against an isolated empty target, and verifying that corrective changes use forward migrations. No schema or migration was generated or applied in Phase 2.
 
 References: [Kit generate](https://orm.drizzle.team/docs/drizzle-kit-generate), [Kit migrate](https://orm.drizzle.team/docs/drizzle-kit-migrate).
 
-
 ## Validation
 
-2026-09-10 02:00 — Local database foundation checks
+2026-09-10 14:35 — Phase 2 live verification
 
+- Node 24.21.0 / pnpm 12.3.4; Nuxt 4.5.2, Drizzle ORM/Kit 1.0.0-rc.4, Neon driver 1.1.0 and CLI 4.14.3 confirmed unchanged.
+- CLI branch and endpoint metadata match project `ancient-water-37006854` and branch `br-green-sky-zadolgsg`. Local pooled/direct URLs share that development target; no process-level URL override was present.
+- `select 1` through the current Drizzle/Neon factory passed. Database/role ownership, schema privileges and absence of user relations passed read-only checks.
+- Deliberately wrong credentials were rejected by `NeonDbError` with an authentication-failure message and an empty code; no SQLSTATE is claimed. A reserved unreachable hostname with disposable credentials failed. Missing configuration produced the variable-name-only error.
+- One-off fetches used a 15-second timeout and suppressed raw driver errors.
 - `pnpm lint` and `pnpm typecheck`: passed.
-- Offline check: missing `NUXT_DATABASE_URL` fails with the variable name only; constructing the typed HTTP client with a disposable URL makes zero network requests.
-- Imports/client assets: no database imports in `app/` or `shared/` (the latter is absent); the generated production client contains no database factory/driver or private configuration keys.
-- Schema/migrations: no schema files or migration directory were created. No DDL, persistent pool, public probe or automatic migration was added.
-- `pnpm test:run`: exit 1 because no test files exist, as expected by the roadmap; this is not a passing test suite.
-- Live development connectivity, remote schema emptiness, migration-role permissions, wrong credentials and unreachable-endpoint checks: not yet run against the configured development target. Offline checks do not establish these results.
+- `pnpm test:run`: exit 1, no test files found, as expected for this phase; not a passing test suite.
+- `pnpm build`: passed with Nitro `node-server`, run outside the sandbox due to the previously established file-tracing permission restriction. Non-fatal Rolldown timing, Zod annotation and Vue/VueUse export warnings remain.
+- Built Nuxt `useRuntimeConfig()` → existing validated Drizzle factory → dev SQL: passed. Kit resolves the same dev target through its direct URL. Homepage HTTP 200; rendered HTML and client assets contain no database credentials, private database keys or database code.
+- Source boundaries, absence of schema/migration artifacts, ignored local notes and diff whitespace checks passed.
 
-2026-09-10 02:06 — Production build verified
-
-`pnpm build` passed with Nitro `node-server` after retrying outside the sandbox. The first attempt failed during dependency tracing with `EPERM` reading the user-directory link; no source workaround was introduced. Non-fatal Rolldown plugin-timing, Zod annotation and Vue/VueUse export-deprecation warnings remain.
-
-
-2026-09-10 14:15 — Environment review only
-
-Confirmed file presence, branch labels, URL roles/TLS, empty template values, and Git ignore/untracked status for local environment files. Read `pnpm exec neon env pull --help` to verify destination and variable selection. No environment files, application code or tooling configuration were changed; no credentials were printed, Neon variables pulled, database queries run or deployment settings changed. The explicit provider path `server/database/clients/neon.ts` is retained by project decision. Earlier build/test results remain historical; application checks were not rerun for documentation-only work.
+No database, domain/auth schema, migration, role, branch or production resource was modified. No credentials were added to tracked files. The next implementation phase is Better Auth server and initial migration (Phase 3).

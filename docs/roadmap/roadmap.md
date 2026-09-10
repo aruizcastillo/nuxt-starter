@@ -6,17 +6,19 @@ Version baseline: Nuxt **4.5.2**, Better Auth/adapter **1.7.3**, Drizzle ORM/Kit
 
 ## Phase 1 — Environment and configuration · Required
 
-- [ ] Document supported Node/pnpm versions and reproducible installation.
-- [ ] Connect private runtime configuration and validate required settings.
-- [ ] Keep database tooling and application environment names consistent.
-- [ ] Define environment-specific configuration for local, preview and production.
-- [ ] Extend `.env.example` with email delivery settings when the provider is selected.
+- [x] Document supported Node/pnpm versions and reproducible installation.
+- [x] Connect private runtime configuration and validate required settings.
+- [x] Keep database tooling and application environment names consistent.
+- [x] Define environment-specific configuration for local, preview and production.
+- [x] Extend `.env.example` with email delivery settings when the provider is selected.
 
 ## Phase 2 — Database foundation · Required
 
-- [ ] Provision an isolated Neon development database.
+2026-09-10 14:37 — Complete; [database setup and validation](../current/database.md).
+
+- [x] Provision an isolated Neon development database.
 - [x] Establish the server-only Drizzle connection using the supported Neon integration.
-- [ ] Confirm connectivity without exposing credentials or database code to the client.
+- [x] Confirm connectivity without exposing credentials or database code to the client.
 - [x] Establish the reviewed, version-controlled migration workflow.
 
 ## Phase 3 — Better Auth server and initial migration · Required
