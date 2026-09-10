@@ -102,43 +102,40 @@ All `NUXT_*` settings are private Nuxt runtime configuration. For local `dev`, `
 
 ## Database setup
 
-The repository includes Neon CLI 4.14.3. After installing dependencies and creating `.env`, authenticate:
+1. Create a project in the [Neon dashboard](https://console.neon.tech/) and create or select an isolated development branch.
+
+2. Authenticate the local Neon CLI and link this repository to the project:
 
 ```sh
 pnpm exec neon auth
-pnpm exec neon orgs list
-```
-
-For a fresh setup, create and link a development-only project. Substitute an organization ID from the preceding command and a [supported region](https://neon.com/docs/introduction/regions) close to the application runtime:
-
-```sh
-pnpm exec neon link --org-id <org-id> --project-name nuxt-auth-starter-dev --region-id <region-id>
-```
-
-If using an existing Neon project instead, link it interactively and create or select a dedicated development branch:
-
-```sh
 pnpm exec neon link
+```
+
+3. Select the development branch:
+
+```sh
 pnpm exec neon checkout dev
 ```
 
-Do not select a production branch. Once the intended branch is pinned in the ignored `.neon` context file, pull only the database settings used by this starter:
+4. Pull the database environment variables into `.env`:
 
 ```sh
 pnpm exec neon env pull --file .env --env DATABASE_URL --env DATABASE_URL_UNPOOLED --env NEON_BRANCH
 ```
 
-The pull preserves the other entries in `.env`. It supplies a pooled `DATABASE_URL` for application/serverless traffic, a direct `DATABASE_URL_UNPOOLED` for Drizzle migrations, and the selected `NEON_BRANCH`. Copy the pooled `DATABASE_URL` value to `NUXT_DATABASE_URL`; Neon does not manage that Nuxt-specific key.
+The pull preserves the other entries in `.env`.
 
-Confirm that all three URLs refer to the same branch, database, and role, then apply the migration already committed under `server/database/migrations/`:
+Copy the pooled `DATABASE_URL` value to `NUXT_DATABASE_URL`. Neon does not manage this Nuxt-specific variable.
+
+Ensure `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, and `NUXT_DATABASE_URL` reference the intended Neon database and branch before applying migrations.
+
+5. Apply the committed migrations:
 
 ```sh
 pnpm db:migrate
 ```
 
-Drizzle Kit loads `.env` directly and reads `DATABASE_URL_UNPOOLED`; it does not use Nuxt runtime configuration.
-
-See the [Neon CLI quickstart](https://neon.com/docs/cli/quickstart), [branching documentation](https://neon.com/docs/introduction/branching), and [connection guidance](https://neon.com/docs/connect/connect-from-any-app) for provider reference.
+Drizzle Kit reads `DATABASE_URL_UNPOOLED` directly from `.env`, while the Nuxt server uses `NUXT_DATABASE_URL`.
 
 For future schema changes, use the reviewed workflow:
 
