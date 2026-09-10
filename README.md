@@ -1,6 +1,6 @@
 # Nuxt Auth Starter
 
-Nuxt 4 starter with a public UI shell. Database, authentication and email integration are upcoming work in the [roadmap](docs/roadmap/roadmap.md).
+Nuxt 4 starter with a public UI shell. The development database connection is verified; authentication and email integration are upcoming work in the [roadmap](docs/roadmap/roadmap.md).
 
 ## Setup
 
@@ -31,7 +31,7 @@ All seven keys live outside `runtimeConfig.public`. [Nuxt runtime overrides](htt
 
 | Variable | Purpose and validation boundary |
 | --- | --- |
-| `NUXT_DATABASE_URL` | PostgreSQL/Neon URL (`postgres://` or `postgresql://` with a host). Required when database functionality or a connecting Kit command is used. |
+| `NUXT_DATABASE_URL` | PostgreSQL/Neon URL (`postgres://` or `postgresql://` with a host). Required when Nuxt server database functionality is used; mirrors pooled `DATABASE_URL`. |
 | `NUXT_BETTER_AUTH_SECRET` | Independently generated random secret, at least 32 characters; required when auth initializes. Generate with `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"`. Validation checks length, not randomness. |
 | `NUXT_BETTER_AUTH_URL` | Canonical app origin; no credentials, path other than `/`, query or fragment. HTTPS required except `http://localhost` during development. |
 | `NUXT_GOOGLE_CLIENT_ID`, `NUXT_GOOGLE_CLIENT_SECRET` | Both present or both absent until Google integration is enabled. |
@@ -55,10 +55,19 @@ Use a stable, controlled preview hostname for complete OAuth testing. Arbitrary 
 
 ## Database tooling and email plan
 
-Drizzle Kit runs outside Nuxt: `drizzle.config.ts` loads `dotenv/config` and reads **`NUXT_DATABASE_URL`** directly. There is no alternate database variable or shared Nuxt configuration abstraction. Dotenv loads the root `.env` by default; supplied process variables take precedence. For another local file, set `DOTENV_CONFIG_PATH` in the invoking process; for controlled deployment tooling, inject the target environment's variables explicitly.
+2026-09-10 02:36 — Neon development setup
 
-The Kit commands `migrate`, `push`, `pull` and `studio` validate the URL before connecting; `generate`, `check`, `up` and `export` do not require credentials. The CLI command determines this boundary. Existing schema and migration paths are unchanged. There is no schema or migration yet. The planned production workflow remains schema → generate → review/commit → migrate; `push` is for appropriate development use only.
+Local CLI `neon@4.14.3` is used through `pnpm exec neon ...`. `.neon` links this repository to project `ancient-water-37006854`, branch `dev` (`br-green-sky-zadolgsg`). Local development uses `.env` with `DATABASE_URL`, `DATABASE_URL_UNPOOLED` and `NEON_BRANCH=dev`; `.env.local` is no longer used. Retain both `DATABASE_URL` and `NUXT_DATABASE_URL` without renaming or normalization. Nuxt and Drizzle load `.env` by default. `.env.production` is an ignored local reference only; Vercel owns actual Preview/Production values.
+
+The installed `neon`, `neon-postgres`, `neon-postgres-branches` and `neon-object-storage` skills came from `pnpm exec neon skills`; use that command if more are needed. Authentication remains self-hosted Better Auth, with no Neon Auth. Do not introduce `neon config init`, `neon.ts`, `neon deploy` or `@neon/config`. See [database state](docs/current/database.md) for remaining verification and the template's branch-value distinction.
+
+Drizzle Kit runs outside Nuxt: `drizzle.config.ts` loads `dotenv/config` and reads **`DATABASE_URL_UNPOOLED`** directly. Neon-managed `DATABASE_URL` and `DATABASE_URL_UNPOOLED` coexist with `NUXT_DATABASE_URL`; keep the duplication for now. No automatic alias mapping or shared Nuxt configuration abstraction is implemented. Dotenv loads the root `.env` by default; supplied process variables take precedence. For another local file, set `DOTENV_CONFIG_PATH` in the invoking process; for controlled deployment tooling, inject the target environment's variables explicitly.
+
+Configuration includes `dbCredentials` only when the direct URL is nonempty. Kit owns command-specific credential checks; credential-free generation needs no custom command detection. Malformed values may fail in the driver. Existing schema and migration paths are unchanged. There is no schema or migration yet. The planned production workflow remains schema → generate → review/commit → migrate; `push` is for appropriate development use only.
 
 The established email plan is the [Resend HTTP API](https://resend.com/docs/api-reference/emails/send-email), using the existing server fetch stack in Phase 4. No SDK is needed now. Before sending, configure a verified sender and controlled test recipients. Provider verification, delivery and enabled-method checks belong to Phase 4.
 
 See [current project state](docs/current/project-state.md) for validation evidence and remaining work. `pnpm test:run` currently reports no tests; actual suites begin alongside authentication work.
+
+
+2026-09-10 14:38 — Phase 2 complete: live dev connectivity, identity/permissions, empty schema, failure handling and runtime/client privacy checks passed. No tables or migrations were created. See [database validation](docs/current/database.md#validation).
