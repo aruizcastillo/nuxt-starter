@@ -55,7 +55,13 @@ Use a stable, controlled preview hostname for complete OAuth testing. Arbitrary 
 
 ## Database tooling and email plan
 
-Drizzle Kit runs outside Nuxt: `drizzle.config.ts` loads `dotenv/config` and reads **`NUXT_DATABASE_URL`** directly. There is no alternate database variable or shared Nuxt configuration abstraction. Dotenv loads the root `.env` by default; supplied process variables take precedence. For another local file, set `DOTENV_CONFIG_PATH` in the invoking process; for controlled deployment tooling, inject the target environment's variables explicitly.
+2026-09-10 02:36 — Neon development setup
+
+Local CLI `neon@4.14.3` is used through `pnpm exec neon ...`. `.neon` links this repository to project `ancient-water-37006854`, branch `dev` (`br-green-sky-zadolgsg`). Neon pulled `DATABASE_URL`, `DATABASE_URL_UNPOOLED` and `NEON_BRANCH=dev` into `.env.local`. Retain both `DATABASE_URL` and `NUXT_DATABASE_URL` without renaming or normalization. Environment-file loading is unchanged; the Neon-pulled `.env.local` must not be assumed to load through the existing default `.env` flow.
+
+The installed `neon`, `neon-postgres`, `neon-postgres-branches` and `neon-object-storage` skills came from `pnpm exec neon skills`; use that command if more are needed. Authentication remains self-hosted Better Auth, with no Neon Auth. Do not introduce `neon config init`, `neon.ts`, `neon deploy` or `@neon/config`. See [database state](docs/current/database.md) for remaining verification and the template's branch-value distinction.
+
+Drizzle Kit runs outside Nuxt: `drizzle.config.ts` loads `dotenv/config` and reads **`NUXT_DATABASE_URL`** directly. Neon-managed `DATABASE_URL` and `DATABASE_URL_UNPOOLED` coexist with `NUXT_DATABASE_URL`; keep the duplication for now. No automatic alias mapping or shared Nuxt configuration abstraction is implemented. Dotenv loads the root `.env` by default; supplied process variables take precedence. For another local file, set `DOTENV_CONFIG_PATH` in the invoking process; for controlled deployment tooling, inject the target environment's variables explicitly.
 
 The Kit commands `migrate`, `push`, `pull` and `studio` validate the URL before connecting; `generate`, `check`, `up` and `export` do not require credentials. The CLI command determines this boundary. Existing schema and migration paths are unchanged. There is no schema or migration yet. The planned production workflow remains schema → generate → review/commit → migrate; `push` is for appropriate development use only.
 
