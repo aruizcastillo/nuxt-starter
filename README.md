@@ -85,11 +85,13 @@ The minimal usable local database/auth setup requires `NUXT_DATABASE_URL`, `DATA
 | `NUXT_BETTER_AUTH_SECRET` | Required when the auth endpoint initializes. Use an independently generated random secret of at least 32 characters. |
 | `NUXT_BETTER_AUTH_URL` | Required when the auth endpoint initializes. Use `http://localhost:3000` locally. Non-local origins must use HTTPS. |
 
-Generate a local auth secret with Node:
+Generate a secure Better Auth secret:
 
 ```sh
 node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
 ```
+
+Set the result as `NUXT_BETTER_AUTH_SECRET`.
 
 The following pairs are reserved for Phase 4 and should remain blank for the current implementation:
 
