@@ -2,7 +2,7 @@
 
 2026-09-10 01:57 — Neon HTTP client and migration procedure
 
-`server/database/client.ts` exports `createDatabase(databaseUrl: string): NeonHttpDatabase`. It constructs `drizzle({ client: neon(databaseUrl) })` with the installed Neon 1.1.0 and Drizzle ORM 1.0.0-rc.4. This matches the [official Neon integration](https://orm.drizzle.team/docs/connect-neon) and the installed RC.4 types. It creates no persistent pool, tables, migrations or module-global client. Constructing the client does not execute a query.
+`server/database/clients/neon.ts` exports `createDatabase(databaseUrl: string): NeonHttpDatabase`. It constructs `drizzle({ client: neon(databaseUrl) })` with the installed Neon 1.1.0 and Drizzle ORM 1.0.0-rc.4. This matches the [official Neon integration](https://orm.drizzle.team/docs/connect-neon) and the installed RC.4 types. It creates no persistent pool, tables, migrations or module-global client. Constructing the client does not execute a query.
 
 Server consumers obtain `useRuntimeConfig(event)`, validate it with `parseDatabaseConfig`, and pass its `databaseUrl` to the factory. Runtime lookup stays at the call site. No current application route consumes the client; no public database probe or startup query exists. Keep database imports under `server/` and never return driver errors or connection objects to clients.
 
@@ -21,9 +21,33 @@ Maintainer-reported setup (no Neon command or live query was run for this docume
 | Active branch | `dev` |
 | Branch ID | `br-green-sky-zadolgsg` |
 | Repository link | `.neon` |
-| Pulled branch environment | `.env.local` |
+| Local development environment | `.env` (the previous `.env.local` is absent) |
 
-Neon manages `DATABASE_URL`, `DATABASE_URL_UNPOOLED` and `NEON_BRANCH=dev` in the pulled environment. Keep `DATABASE_URL` and `NUXT_DATABASE_URL` duplicated for now: do not remove, rename or normalize either. Existing Nuxt runtime configuration and Drizzle Kit still consume `NUXT_DATABASE_URL`; no automatic alias mapping or change to environment-file loading has been implemented. `.env.local` is the Neon-pulled file; current tooling's default `.env` loading must not be assumed to load it. `.env.example` currently contains `NEON_BRANCH=production`; that template value does not describe the active linked branch and was left unchanged.
+2026-09-10 14:15 — Final local environment convention
+
+| Location | Purpose |
+| --- | --- |
+| `.env` | Local development only; loaded by default by Nuxt and the existing Drizzle dotenv integration. Current `NEON_BRANCH` is `dev`. |
+| `.env.example` | Committed template: variable names with empty values and no secrets. All values are currently empty, including `NEON_BRANCH`; use `dev` locally. |
+| `.env.production` | Optional local-only production reference, ignored and untracked. Never load it by default, commit it, or use it as deployment configuration. |
+| Vercel environment configuration | Authoritative values for Preview and Production, scoped separately. |
+| `.env.local` | Not used by the final convention and currently absent. Do not introduce a second automatically loaded local source. |
+
+`NUXT_DATABASE_URL` is the private Nuxt runtime override and mirrors Neon’s pooled `DATABASE_URL`. Neon manages `DATABASE_URL`, `DATABASE_URL_UNPOOLED` (direct) and `NEON_BRANCH`. Both URL names remain intentional; there is no build-time alias mapping. The direct URL is designated for migration tooling. **Pending implementation:** `drizzle.config.ts` still reads `NUXT_DATABASE_URL` for connecting commands; it has not yet switched migration access to `DATABASE_URL_UNPOOLED`.
+
+The current `.env` contains matching pooled `NUXT_DATABASE_URL`/`DATABASE_URL` and a direct `DATABASE_URL_UNPOOLED`; all three URLs request TLS. `.env.production` has the same arrangement for its production-labelled reference. Values were inspected without printing credentials; labels and URL structure do not constitute live target or permission verification.
+
+The installed Neon CLI 4.14.3 help confirms `--file` selects the destination and preserves non-Neon lines. For a future explicit development pull, use:
+
+```sh
+pnpm exec neon env pull --project-id ancient-water-37006854 --branch dev --file .env --env DATABASE_URL --env DATABASE_URL_UNPOOLED --env NEON_BRANCH
+```
+
+The variable allowlist restricts the pull to the database variables and branch label. After pulling, explicitly synchronize `NUXT_DATABASE_URL` with the new pooled `DATABASE_URL`; Neon does not manage that Nuxt key. Do not pull a production/preview branch into `.env`. This command was verified through installed CLI help, not executed.
+
+Nuxt and Drizzle retain their default `.env` loading. `.env.production` is not automatically loaded by this project's Nuxt/Drizzle setup; do not select it with dotenv flags, source it into a shell, or add loader scripts for it. Existing process variables can override file values, so local shells must not carry production credentials. Built deployment output receives its variables from the deployment environment rather than these local files.
+
+A gitignored plaintext production reference still risks exposure through backups/sync, explicit loading, copying, or forced Git inclusion. It is permitted as a local reference under the stated constraints, but an encrypted password-manager entry is the safer place for production values; a names-only reference avoids keeping another plaintext copy. Vercel remains authoritative either way.
 
 The installed skills are `neon`, `neon-postgres`, `neon-postgres-branches` and `neon-object-storage`, installed with `pnpm exec neon skills`. Use that same command if additional Neon skills are needed later. Skill availability does not mean Object Storage or other Neon services are integrated.
 
@@ -43,7 +67,7 @@ Drizzle Kit 1.0.0-rc.4 owns migration generation and metadata. Its installed typ
 - Migrations: `server/database/migrations`.
 - Scripts: `pnpm db:generate`, `pnpm db:migrate`, `pnpm db:push`, `pnpm db:studio`.
 
-The production workflow is **generate → review SQL and metadata → commit all generated artifacts → migrate**. Before migration, identify the project/branch/endpoint in Neon and compare the selected database/role with the intended target. Confirm backups/recovery arrangements and review destructive statements and data transformations. Use the credentials for that target through `NUXT_DATABASE_URL`; Kit loads dotenv outside Nuxt and does not share a runtime abstraction with the application.
+The production workflow is **generate → review SQL and metadata → commit all generated artifacts → migrate**. Before migration, identify the project/branch/endpoint in Neon and compare the selected database/role with the intended target. Confirm backups/recovery arrangements and review destructive statements and data transformations. The final convention assigns migration credentials to `DATABASE_URL_UNPOOLED`; the current Kit consumer still needs that change before this convention is fully implemented. Kit loads dotenv outside Nuxt and does not share a runtime abstraction with the application.
 
 Let RC.4 generate its own directory and metadata format; do not hand-author snapshots or assume the old 0.x journal layout. Never rewrite a migration already applied to a shared environment. Fix mistakes with reviewed forward migrations. `db:push` is development-only. Do not migrate during requests, imports, builds or function cold starts.
 
@@ -66,3 +90,8 @@ References: [Kit generate](https://orm.drizzle.team/docs/drizzle-kit-generate), 
 2026-09-10 02:06 — Production build verified
 
 `pnpm build` passed with Nitro `node-server` after retrying outside the sandbox. The first attempt failed during dependency tracing with `EPERM` reading the user-directory link; no source workaround was introduced. Non-fatal Rolldown plugin-timing, Zod annotation and Vue/VueUse export-deprecation warnings remain.
+
+
+2026-09-10 14:15 — Environment review only
+
+Confirmed file presence, branch labels, URL roles/TLS, empty template values, and Git ignore/untracked status for local environment files. Read `pnpm exec neon env pull --help` to verify destination and variable selection. No environment files, application code or tooling configuration were changed; no credentials were printed, Neon variables pulled, database queries run or deployment settings changed. The explicit provider path `server/database/clients/neon.ts` is retained by project decision. Earlier build/test results remain historical; application checks were not rerun for documentation-only work.
