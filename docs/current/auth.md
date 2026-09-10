@@ -1,0 +1,65 @@
+# Better Auth server
+
+2026-09-10 15:46 — Phase 3 implementation and validation
+
+## Architecture
+
+`server/auth/options.ts` is the single typed Better Auth factory. It accepts parsed auth settings and the existing Drizzle client. `server/utils/auth.ts` assembles it from `useRuntimeConfig(event)` on demand; the standard catch-all handler returns `auth.handler(toWebRequest(event))` unchanged. There is no startup database query, additional connection layer, client auth state or auth UI.
+
+Better Auth and adapter remain **1.7.3**, Drizzle ORM/Kit **1.0.0-rc.4**, Neon HTTP **1.1.0**, Nuxt **4.5.2**. The adapter uses `@better-auth/drizzle-adapter/relations-v2`, PostgreSQL and an explicit core table mapping. The existing Neon factory merges full `defineRelations` entries before generated `authRelations`. Its return type is inferred to preserve the relation types. HTTP does not support interactive transactions, so adapter transactions remain explicitly disabled; joins remain disabled by default.
+
+Sessions are stored in PostgreSQL; cookie caching is disabled for authoritative revocation. Email/password is enabled for Phase 3 lifecycle verification. Google, email delivery, verification requirements and recovery policy remain Phase 4 work. No plugins, fake verification or runtime test bypasses were added. The intermediate server is not production-ready.
+
+## Generation and migration
+
+`server/auth/cli.ts` loads dotenv and the same Phase 1 parsers, then calls the same factory outside Nuxt. Its client construction does not connect to the database. `pnpm auth:generate --yes` invokes the reviewed **auth@1.7.3** CLI (published dependencies pin Better Auth/core 1.7.3). Format generated TypeScript with `pnpm exec eslint server/database/schema/auth.ts --fix` before committing. Initial bootstrapping omitted the not-yet-generated schema; final runtime and CLI both consume the generated mapping without circular imports.
+
+The generated schema contains `user`, `session`, `account` and `verification`: 34 columns, four primary keys, unique user email and session token constraints, three lookup indexes, and two user foreign keys with cascade deletion. Generated token/password fields, timestamps and model names are preserved. Better Auth supplies session/account update timestamps; they intentionally have no SQL default. There are no domain/plugin tables.
+
+Kit generated `server/database/migrations/20260910134024_bumpy_baron_strucker/`, containing `migration.sql` and the RC snapshot format (`snapshot.json`, version 8). Do not edit migration metadata. Use **generate → review → commit → migrate**; never Better Auth's direct migration command or `push` for this workflow.
+
+## Test target and commands
+
+The explicitly authorized disposable branch is `test-phase3` (`br-weathered-hall-zagc439i`), created from the empty `dev` branch in project `ancient-water-37006854`. Its endpoint is `ep-rough-resonance-zadpdt75`, database `nuxt_auth_starter_db`, role `nuxt_auth_starter_db_owner`. `test/helpers/auth.ts` checks this exact target before any test account mutation. If the disposable branch is recreated, verify its Neon identity and update the allowlist deliberately.
+
+The ignored `.env.test-phase3` is an explicitly selected local test file using **existing variable names only**. `.env` remains the development default, `.neon` remains linked to `dev`, and `.env.production` is not loaded. Runtime uses `NUXT_DATABASE_URL`; migrations use direct `DATABASE_URL_UNPOOLED`; pooled `DATABASE_URL` remains available for Neon tooling. No aliasing or default test-file loading was introduced.
+
+For migrations in a fresh PowerShell session with no pre-existing database overrides:
+
+```powershell
+$env:DOTENV_CONFIG_PATH = '.env.test-phase3'
+pnpm db:migrate
+```
+
+For tests, supply the test file's existing variables explicitly to the process (dotenv alone does not override existing process variables):
+
+```powershell
+Get-Content .env.test-phase3 | ForEach-Object {
+  if ($_ -match '^([A-Z][A-Z0-9_]*)=(.*)$') {
+    [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process')
+  }
+}
+pnpm test:run
+```
+
+Close that shell when finished so later development commands do not inherit test settings. Missing/wrong test configuration fails explicitly; it does not skip integration checks. `pnpm exec vitest run --project unit` runs just the pure parser tests without a database.
+
+The separate Node e2e project uses `@nuxt/test-utils/e2e` to build and start a real Nitro server. An ephemeral secret and HTTPS canonical origin exercise secure cookie attributes; local HTTP transports requests to the test server while explicitly replaying its issued cookie. Tests create unique accounts through the mounted Better Auth endpoints and clean only those accounts and their sessions/credentials. No tables are truncated. Phase 4 must update the explicitly marked unverified-email expectations.
+
+## Validation checkpoint
+
+2026-09-10 15:50 — Disposable migration and implementation validated
+
+- `pnpm auth:generate --yes`: repeated generation was byte-identical, including after applying the same ESLint formatting; no network connection was needed by the auth factory.
+- `pnpm db:generate`: initial SQL/snapshot generated; subsequent generation reports no schema changes.
+- `pnpm db:migrate` on the verified empty disposable branch: passed; rerun retained one history entry. Catalog inspection confirmed all four tables, 34 columns, indexes and constraints.
+- `pnpm exec nuxt prepare`, `pnpm lint`, `pnpm typecheck`: passed.
+- `pnpm exec vitest run --project unit`: 5 passed. `pnpm test:run` with isolated settings: 9 passed, including all four live-server tests.
+- `pnpm build` with isolated settings: passed. Existing non-fatal Rolldown timing, Zod annotation and Vue/VueUse export warnings remain.
+- Development was rechecked empty before the committed replay and final migration. No test accounts were created there.
+
+## References
+
+- [Better Auth Nuxt handler](https://better-auth.com/docs/integrations/nuxt), [Relations v2 adapter](https://better-auth.com/docs/adapters/drizzle), [CLI](https://better-auth.com/docs/concepts/cli).
+- [Drizzle RC relations](https://orm.drizzle.team/docs/relations), [Neon integration](https://orm.drizzle.team/docs/connect-neon), [migration workflow](https://orm.drizzle.team/docs/drizzle-kit-migrate).
+- Installed adapter generator/types, Nuxt test-utils 4.2.0 e2e types/source and Vitest 4.1.11 project API were checked against the implementation.

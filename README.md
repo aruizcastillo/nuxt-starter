@@ -1,6 +1,6 @@
 # Nuxt Auth Starter
 
-Nuxt 4 starter with a public UI shell. The development database connection is verified; authentication and email integration are upcoming work in the [roadmap](docs/roadmap/roadmap.md).
+Nuxt 4 starter with a public UI shell and a Better Auth server backed by Drizzle/Neon. Phase 3 adds the initial migration and live auth tests; email delivery, Google and production authentication policy remain Phase 4 work in the [roadmap](docs/roadmap/roadmap.md). See [auth setup and test commands](docs/current/auth.md).
 
 ## Setup
 
@@ -37,9 +37,9 @@ All seven keys live outside `runtimeConfig.public`. [Nuxt runtime overrides](htt
 | `NUXT_GOOGLE_CLIENT_ID`, `NUXT_GOOGLE_CLIENT_SECRET` | Both present or both absent until Google integration is enabled. |
 | `NUXT_RESEND_API_KEY`, `NUXT_EMAIL_FROM` | Both present or both absent until email delivery is enabled. Sender is an email address or `App <verified@example.com>`. |
 
-`server/utils/config.ts` provides `parseDatabaseConfig`, `parseAuthConfig` and `parseEmailConfig`. Later server consumers pass `useRuntimeConfig(event)` to the relevant parser before their first outbound operation; auth callers also pass `import.meta.dev`. Each parser checks only its functionality. Errors identify variable names without including values or raw Zod errors. No startup plugin validates unused services, and builds and the public homepage require no credentials. These parsers do not establish connections or initialize Better Auth.
+`server/utils/config.ts` provides `parseDatabaseConfig`, `parseAuthConfig` and `parseEmailConfig`. The server auth utility passes `useRuntimeConfig(event)` to the relevant parsers before assembling Better Auth; auth callers also pass `import.meta.dev`. Each parser checks only its functionality. Errors identify variable names without including values or raw Zod errors. No startup plugin validates unused services, and builds and the public homepage require no credentials. The parsers themselves do not establish connections or initialize Better Auth.
 
-The later Better Auth integration must explicitly pass the parsed secret and base URL: these renamed variables are not Better Auth's automatic defaults. The intended client endpoint is same-origin `/api/auth`; no public auth URL or cross-origin cookie configuration is needed. Phase 4 must require the settings for enabled Google/email methods rather than silently disabling them.
+Better Auth explicitly receives the parsed secret and base URL: these renamed variables are not Better Auth's automatic defaults. The mounted endpoint is `/api/auth`; no public auth URL or cross-origin cookie configuration is needed. Set a local development secret and `NUXT_BETTER_AUTH_URL=http://localhost:3000` to use it locally. Phase 4 must require the settings for enabled Google/email methods rather than silently disabling them.
 
 ## Local, preview and production
 
@@ -63,11 +63,11 @@ The installed `neon`, `neon-postgres`, `neon-postgres-branches` and `neon-object
 
 Drizzle Kit runs outside Nuxt: `drizzle.config.ts` loads `dotenv/config` and reads **`DATABASE_URL_UNPOOLED`** directly. Neon-managed `DATABASE_URL` and `DATABASE_URL_UNPOOLED` coexist with `NUXT_DATABASE_URL`; keep the duplication for now. No automatic alias mapping or shared Nuxt configuration abstraction is implemented. Dotenv loads the root `.env` by default; supplied process variables take precedence. For another local file, set `DOTENV_CONFIG_PATH` in the invoking process; for controlled deployment tooling, inject the target environment's variables explicitly.
 
-Configuration includes `dbCredentials` only when the direct URL is nonempty. Kit owns command-specific credential checks; credential-free generation needs no custom command detection. Malformed values may fail in the driver. Existing schema and migration paths are unchanged. There is no schema or migration yet. The planned production workflow remains schema → generate → review/commit → migrate; `push` is for appropriate development use only.
+Configuration includes `dbCredentials` only when the direct URL is nonempty. Kit owns command-specific credential checks; credential-free generation needs no custom command detection. Malformed values may fail in the driver. The generated auth schema and initial migration use the existing schema and migration paths. The production workflow remains schema → generate → review/commit → migrate; `push` is for appropriate development use only.
 
 The established email plan is the [Resend HTTP API](https://resend.com/docs/api-reference/emails/send-email), using the existing server fetch stack in Phase 4. No SDK is needed now. Before sending, configure a verified sender and controlled test recipients. Provider verification, delivery and enabled-method checks belong to Phase 4.
 
-See [current project state](docs/current/project-state.md) for validation evidence and remaining work. `pnpm test:run` currently reports no tests; actual suites begin alongside authentication work.
+See [current project state](docs/current/project-state.md) for validation evidence and remaining work. `pnpm test:run` requires explicit disposable database settings; it runs parser tests and live Nitro authentication tests. See [test commands and target checks](docs/current/auth.md#test-target-and-commands).
 
 
 2026-09-10 14:38 — Phase 2 complete: live dev connectivity, identity/permissions, empty schema, failure handling and runtime/client privacy checks passed. No tables or migrations were created. See [database validation](docs/current/database.md#validation).

@@ -2,11 +2,11 @@
 
 2026-09-10 14:48 — Completed database foundation and environment convention
 
-`server/database/clients/neon.ts` exports `createDatabase(databaseUrl: string): NeonHttpDatabase`. It constructs `drizzle({ client: neon(databaseUrl) })` with the installed Neon 1.1.0 and Drizzle ORM 1.0.0-rc.4. This matches the [official Neon integration](https://orm.drizzle.team/docs/connect-neon) and the installed RC.4 types. It creates no persistent pool, tables, migrations or module-global client. Constructing the client does not execute a query.
+`server/database/clients/neon.ts` exports `createDatabase(databaseUrl: string)` with its typed return inferred. It constructs `drizzle({ client: neon(databaseUrl), relations })` with the installed Neon 1.1.0 and Drizzle ORM 1.0.0-rc.4. Phase 3 adds full core-table Relations v2 entries followed by generated auth relation parts. This matches the [official Neon integration](https://orm.drizzle.team/docs/connect-neon) and the installed RC.4 types. It creates no persistent pool or module-global client. Constructing the client does not execute a query.
 
-Server consumers obtain `useRuntimeConfig(event)`, validate it with `parseDatabaseConfig`, and pass its `databaseUrl` to the factory. Runtime lookup stays at the call site. No current application route consumes the client; no public database probe or startup query exists. Keep database imports under `server/` and never return driver errors or connection objects to clients.
+Server consumers obtain `useRuntimeConfig(event)`, validate it with `parseDatabaseConfig`, and pass its `databaseUrl` to the factory. Runtime lookup stays at the call site. The auth utility uses this same factory and passes the client to Better Auth; no public database probe or startup query exists. Keep database imports under `server/` and never return driver errors or connection objects to clients.
 
-The selected transport is HTTP for one-shot queries. It does not support interactive `db.transaction(callback)`. Phase 3 will add Relations v2 to the factory with the generated auth schema and retain the Better Auth adapter's default `transaction: false`. No auth integration is implemented here.
+The selected transport is HTTP for one-shot queries. It does not support interactive `db.transaction(callback)`. Better Auth explicitly sets `transaction: false`. See [auth state](auth.md) for the generated schema, migration and disposable integration target.
 
 ## Development target
 
@@ -74,7 +74,7 @@ The production workflow is **generate → review SQL and metadata → commit all
 
 Let RC.4 generate its own directory and metadata format; do not hand-author snapshots or assume the old 0.x journal layout. Never rewrite a migration already applied to a shared environment. Fix mistakes with reviewed forward migrations. `db:push` is development-only. Do not migrate during requests, imports, builds or function cold starts.
 
-Phase 3 owns initial auth schema generation and the first migration. Acceptance requires reviewing and committing every generated artifact, replaying against an isolated empty target, and verifying that corrective changes use forward migrations. No schema or migration was generated or applied in Phase 2.
+Phase 3 owns initial auth schema generation and the first migration, documented in [auth state](auth.md). Acceptance requires reviewing and committing every generated artifact, replaying against an isolated empty target, and verifying that corrective changes use forward migrations. No schema or migration was generated or applied in Phase 2.
 
 References: [Kit generate](https://orm.drizzle.team/docs/drizzle-kit-generate), [Kit migrate](https://orm.drizzle.team/docs/drizzle-kit-migrate).
 
